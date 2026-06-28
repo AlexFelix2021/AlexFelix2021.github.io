@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baustellenfahrplan – Schleswig-Holstein</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --border:   #2a2e3f;
+    --accent:   #f5a623;
+    --green:    #4caf82;
+    --red:      #e05c5c;
+    --yellow:   #e8c84a;
+    --muted:    #6b7080;
+    --text:     #d8dce8;
+    --heading:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 32px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    margin-bottom: 32px;
+  }
+  .doc-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--heading);
+    letter-spacing: 0.02em;
+  }
+  .doc-header .sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 28px;
+  }
+  .section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Train block ── */
+  .train-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .train-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.025);
+  }
+  .train-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .re7  { background: #1a3a6e; color: #7eb8f7; border: 1px solid #2a5aae; }
+  .re72 { background: #1e3a1e; color: #7ecf7e; border: 1px solid #2e6a2e; }
+  .re74 { background: #3a1a3a; color: #cf7ecf; border: 1px solid #6a2e6a; }
+  .rb73 { background: #3a2a1a; color: #cfa87e; border: 1px solid #6a4e2e; }
+  .rb75 { background: #1a3a3a; color: #7ecfcf; border: 1px solid #2e6a6a; }
+
+  .train-route {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .train-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── Stops table ── */
+  .stops {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .stw-group {
+    padding: 8px 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stw-group:last-child { border-bottom: none; }
+  .stw-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+  .stop-row {
+    display: flex;
+    gap: 0;
+    align-items: baseline;
+    padding: 2px 0;
+  }
+  .stop-station {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--heading);
+    min-width: 200px;
+  }
+  .stop-track {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 60px;
+  }
+  .stop-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    min-width: 95px;
+  }
+  .stop-time.arr { color: #7eb8f7; }
+  .stop-time.dep { color: var(--green); }
+  .stop-time.both {
+    color: var(--green);
+  }
+  .stop-delay {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--yellow);
+    min-width: 50px;
+  }
+  .stop-info {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .crossing {
+    font-size: 10px;
+    color: var(--red);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-left: 4px;
+  }
+  .warn-box {
+    background: rgba(240, 92, 92, 0.08);
+    border: 1px solid rgba(240, 92, 92, 0.25);
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-size: 11px;
+    color: #e8a0a0;
+    margin: 8px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.5;
+  }
+  .info-box {
+    background: rgba(245, 166, 35, 0.07);
+    border: 1px solid rgba(245, 166, 35, 0.2);
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-size: 11px;
+    color: #e8c87a;
+    margin: 8px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.5;
+  }
+  .div-arrow {
+    color: var(--muted);
+    font-size: 10px;
+    margin: 0 3px;
+  }
+
+  .dir-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+  }
+  .dir-to   { background: rgba(76,175,130,0.15); color: var(--green); }
+  .dir-from { background: rgba(126,184,247,0.15); color: #7eb8f7; }
+
+  hr.sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .critical-note {
+    background: rgba(232,200,74,0.08);
+    border: 1px solid rgba(232,200,74,0.25);
+    border-radius: 5px;
+    padding: 10px 14px;
+    margin-bottom: 24px;
+    font-size: 11px;
+    color: #e8d87a;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.6;
+  }
+  .critical-note strong { color: var(--accent); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>Baustellenfahrplan — Schleswig-Holstein</h1>
+  <div class="sub">Umleitungsverkehr Kiel · Eckernförde · Flensburg &nbsp;|&nbsp; Kiel · Neumünster · Flensburg &nbsp;|&nbsp; Stündlich wiederkehrend</div>
+</div>
+
+<div class="critical-note">
+  <strong>⚠ Hinweise für alle FDL</strong><br>
+  · RB73 Kiel→ECK wartet an AKH2, bis RE7 (FL-Zugteil) AKH3 erreicht und eingleisige Strecke geräumt hat (gilt für alle Zyklen)<br>
+  · RE72 Kiel→FL räumt AKH-Abschnitt bei 11:47 · RB73 ECK→Kiel betritt Gegenrichtung bei 11:47 → 0 min Puffer, RE72 hat Vorrang und muss zuerst ankommen<br>
+  · Umleiterzüge haben höchste Priorität, sofern dadurch keine unverhältnismäßigen Folgeverspätungen bei anderen Zügen entstehen<br>
+  · RE7 FL Zug 11:15 ab Flensburg fährt noch nach Originalfahrplan · Umleitung erst ab Zug 12:15 · RE7 bei Ankunft 11:40 (AF4) bitte auf AF5 leiten, damit dieser dann auf Umleitungsstrecke fahren kann
+</div>
+
+<!-- ══════════════════════════════════ RE7 FL ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">RE7 · Flensburger Zugteil</div>
+
+  <!-- NMS → FL -->
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re7">RE7 FL</span>
+      <span class="train-route">Neumünster <span class="div-arrow">→</span> Flensburg</span>
+      <span class="train-note">via Kiel · Eckernförde · stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Neumünster (AN3)</span><span class="stop-track"></span><span class="stop-time dep">Abf. :32</span></div>
+        <div class="stop-row"><span class="stop-station">Einfeld</span><span class="stop-track"></span><span class="stop-time dep">Df. :36</span></div>
+        <div class="stop-row"><span class="stop-station">Bordesholm (ABRD2)</span><span class="stop-track"></span><span class="stop-time dep">Df. :40</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Flintbek</span><span class="stop-track"></span><span class="stop-time dep">Df. :44</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Meimersdorf (AMR)</span><span class="stop-track">AMR 3–6</span><span class="stop-time dep">Df. :50</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH3)</span><span class="stop-track">AKH3</span><span class="stop-time dep">Df. :52–:54</span><span class="stop-info">Fahrtzeitreserve</span></div>
+        <div class="stop-row"><span class="stop-station">Suchsdorf (ASU2)</span><span class="stop-track"></span><span class="stop-time dep">Df. :58</span></div>
+        <div class="stop-row"><span class="stop-station">Neuwittenbek (ANW2)</span><span class="stop-track"></span><span class="stop-time dep">Df. :02</span></div>
+        <div class="stop-row"><span class="stop-station">Gettorf (AGF1)</span><span class="stop-track">AGF1</span><span class="stop-time arr">Ank. :07</span><span class="stop-time dep">&nbsp;Abf. :09</span><span class="crossing">⇄ Kreuzung ab +1h</span></div>
+        <div class="stop-row"><span class="stop-station">Eckernförde (AEC2)</span><span class="stop-track"></span><span class="stop-time dep">Df. :18</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Rieseby</span><span class="stop-track"></span><span class="stop-time dep">Df. :26</span></div>
+        <div class="stop-row"><span class="stop-station">Süderbrarup (ASUE1)</span><span class="stop-track">ASUE1</span><span class="stop-time arr">Ank. :37</span><span class="stop-time dep">&nbsp;Abf. :40</span><span class="crossing">⇄ Kreuzung ab +1h</span></div>
+        <div class="stop-row"><span class="stop-station">Sörup (ASOE2)</span><span class="stop-track"></span><span class="stop-time dep">Df. :49</span></div>
+        <div class="stop-row"><span class="stop-station">Husby</span><span class="stop-track"></span><span class="stop-time dep">Df. :55</span></div>
+        <div class="stop-row"><span class="stop-station">Flensburg (AF5)</span><span class="stop-track">AF5</span><span class="stop-time arr">Ank. +0:04</span><span class="stop-delay">(+24)</span><span class="stop-time dep">&nbsp;Abf. +1:15</span><span class="stop-delay">(+0)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FL → NMS -->
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re7">RE7 FL</span>
+      <span class="train-route">Flensburg <span class="div-arrow">→</span> Neumünster</span>
+      <span class="train-note">via Eckernförde · Kiel · stündlich</span>
+    </div>
+    <div class="info-box">Zug :15 fährt noch normal! · Umleitung erst ab Zug 12:15 · Ankunft 11:40 (AF4) bitte auf AF5 leiten</div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Flensburg (AF5)</span><span class="stop-track">AF5</span><span class="stop-time dep">Abf. +0:15</span><span class="stop-delay">(+0)</span></div>
+        <div class="stop-row"><span class="stop-station">Husby</span><span class="stop-track"></span><span class="stop-time dep">Df. +0:23</span></div>
+        <div class="stop-row"><span class="stop-station">Sörup (ASOE2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +0:29</span></div>
+        <div class="stop-row"><span class="stop-station">Süderbrarup (ASUE2)</span><span class="stop-track">ASUE2</span><span class="stop-time arr">Ank. +0:38</span><span class="stop-time dep">&nbsp;Abf. +0:40</span></div>
+        <div class="stop-row"><span class="stop-station">Rieseby</span><span class="stop-track"></span><span class="stop-time dep">Df. +0:50</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Eckernförde (AEC2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +0:58</span></div>
+        <div class="stop-row"><span class="stop-station">Gettorf (AGF2)</span><span class="stop-track">AGF2</span><span class="stop-time arr">Ank. +1:06</span><span class="stop-time dep">&nbsp;Abf. +1:08</span><span class="crossing">⇄ Kreuzung ab +1h</span></div>
+        <div class="stop-row"><span class="stop-station">Neuwittenbek (ANW2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:11</span></div>
+        <div class="stop-row"><span class="stop-station">Suchsdorf (ASU2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:16</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH3)</span><span class="stop-track">AKH3</span><span class="stop-time dep">Df. +1:20</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Meimersdorf (AMR)</span><span class="stop-track">AMR</span><span class="stop-time dep">Df. +1:25</span></div>
+        <div class="stop-row"><span class="stop-station">Flintbek</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:30</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Bordesholm (ABRD1)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:36</span></div>
+        <div class="stop-row"><span class="stop-station">Einfeld</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:39</span></div>
+        <div class="stop-row"><span class="stop-station">Neumünster (AN5)</span><span class="stop-track">AN5</span><span class="stop-time arr">Ank. +1:46</span><span class="stop-delay">(+24)</span><span class="stop-time dep">&nbsp;Abf. +1:50</span><span class="stop-delay">(+22)</span></div>
+      </div>
+    </div>
+    <div class="info-box">AN5: Verspätete Zugvereinigung mit RE7 Kieler Zugteil · Betriebliche Disposition obliegt FDL Neumünster · Abfahrt so früh wie möglich</div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════ RB73 ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">RB73 · Normalweg mit angepasstem Baustellenfahrplan</div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge rb73">RB73</span>
+      <span class="train-route">Kiel Hbf <span class="div-arrow">→</span> Eckernförde</span>
+      <span class="train-note">stündlich</span>
+    </div>
+    <div class="warn-box">AKH2: Warten bis RE7 FL-Zugteil AKH3 erreicht und eingleisige Strecke geräumt hat (gilt für alle Zyklen)</div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time dep">Abf. :12</span><span class="stop-delay">(+4)</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH2)</span><span class="stop-track">AKH2</span><span class="stop-time arr">Ank. :15</span><span class="stop-time dep">&nbsp;Abf. :21</span><span class="stop-delay">(+8)</span><span class="crossing">⇄ RE7 räumt Strecke</span></div>
+        <div class="stop-row"><span class="stop-station">Kronshagen</span><span class="stop-track"></span><span class="stop-time arr">Ank. :24</span><span class="stop-time dep">&nbsp;Abf. :25</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Suchsdorf (ASU2)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :27</span><span class="stop-time dep">&nbsp;Abf. :28</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Neuwittenbek (ANW1)</span><span class="stop-track">ANW1</span><span class="stop-time arr">Ank. :33</span><span class="stop-time dep">&nbsp;Abf. :36</span><span class="stop-delay">(+11)</span><span class="crossing">⇄ Kreuzung RB73 Gegenrichtung</span></div>
+        <div class="stop-row"><span class="stop-station">Gettorf (AGF1)</span><span class="stop-track">AGF1</span><span class="stop-time arr">Ank. :40</span><span class="stop-time dep">&nbsp;Abf. :41</span><span class="stop-delay">(+11)</span></div>
+        <div class="stop-row"><span class="stop-station">Eckernförde (AEC3)</span><span class="stop-track">AEC3</span><span class="stop-time arr">Ank. :50</span><span class="stop-delay">(+11)</span><span class="stop-time dep">&nbsp;Abf. (Wende) +1:20</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge rb73">RB73</span>
+      <span class="train-route">Eckernförde <span class="div-arrow">→</span> Kiel Hbf</span>
+      <span class="train-note">stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Eckernförde (AEC3)</span><span class="stop-track">AEC3</span><span class="stop-time dep">Abf. :20</span><span class="stop-delay">(+0)</span></div>
+        <div class="stop-row"><span class="stop-station">Gettorf (AGF2)</span><span class="stop-track">AGF2</span><span class="stop-time arr">Ank. :28</span><span class="stop-time dep">&nbsp;Abf. :30</span></div>
+        <div class="stop-row"><span class="stop-station">Neuwittenbek (ANW2)</span><span class="stop-track">ANW2</span><span class="stop-time dep">Df. :35</span><span class="stop-info">&nbsp;Fahrtzeitreserve</span></div>
+        <div class="stop-row"><span class="stop-station">Suchsdorf (ASU2)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :38</span><span class="stop-time dep">&nbsp;Abf. :39</span><span class="stop-delay">(+1)</span></div>
+        <div class="stop-row"><span class="stop-station">Kronshagen</span><span class="stop-track"></span><span class="stop-time arr">Ank. :41</span><span class="stop-time dep">&nbsp;Abf. :42</span><span class="stop-delay">(+1)</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH2)</span><span class="stop-track">AKH2</span><span class="stop-time arr">Ank. :45</span><span class="stop-time dep">&nbsp;Abf. :47</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6b)</span><span class="stop-track">AK6b</span><span class="stop-time arr">Ank. :51</span><span class="stop-delay">(+0)</span><span class="stop-time dep">&nbsp;→ Wende RE74 Abf. +1:03</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════ RB75 ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">RB75 · Umleitung via Neumünster und Nortorf</div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge rb75">RB75</span>
+      <span class="train-route">Kiel Hbf <span class="div-arrow">→</span> Rendsburg</span>
+      <span class="train-note">via Neumünster · Nortorf · stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time dep">Abf. :40</span><span class="stop-delay">(+15)</span></div>
+        <div class="stop-row"><span class="stop-station">Flintbek</span><span class="stop-track"></span><span class="stop-time dep">Df. :46</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Bordesholm (ABRD1)</span><span class="stop-track"></span><span class="stop-time dep">Df. :51</span></div>
+        <div class="stop-row"><span class="stop-station">Einfeld</span><span class="stop-track"></span><span class="stop-time dep">Df. :54</span></div>
+        <div class="stop-row"><span class="stop-station">Neumünster (AN)</span><span class="stop-track">AN 2–6</span><span class="stop-time arr">Ank. +1:01</span><span class="stop-time dep">&nbsp;Abf. +1:06</span><span class="stop-info">&nbsp;Zusatzwende</span></div>
+        <div class="stop-row"><span class="stop-station">Nortorf (ANF1)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:16</span><span class="stop-time dep">&nbsp;Abf. +1:17</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:26</span><span class="stop-delay">(+18)</span></div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR2)</span><span class="stop-track">AR2</span><span class="stop-time arr">Ank. +1:41</span><span class="stop-delay">(+34)</span><span class="stop-time dep">&nbsp;→ Wende Abf. +2:51</span><span class="stop-delay">(+0)</span></div>
+      </div>
+    </div>
+    <div class="info-box">FDL NMS: AON2-Durchfahrt wenn möglich gewähren · Fahrtzeitreserve</div>
+  </div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge rb75">RB75</span>
+      <span class="train-route">Rendsburg <span class="div-arrow">→</span> Kiel Hbf</span>
+      <span class="train-note">via Nortorf · Neumünster · stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR2)</span><span class="stop-track">AR2</span><span class="stop-time dep">Abf. :51</span><span class="stop-delay">(+0)</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON1)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:00</span></div>
+        <div class="stop-row"><span class="stop-station">Nortorf (ANF2)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:05</span><span class="stop-time dep">&nbsp;Abf. +1:06</span></div>
+        <div class="stop-row"><span class="stop-station">Neumünster (AN)</span><span class="stop-track">AN 2–6</span><span class="stop-time arr">Ank. +1:17</span><span class="stop-time dep">&nbsp;Abf. +1:22</span><span class="stop-info">&nbsp;Zusatzwende</span></div>
+        <div class="stop-row"><span class="stop-station">Einfeld</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:26</span></div>
+        <div class="stop-row"><span class="stop-station">Bordesholm (ABRD2)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:30</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Flintbek</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:34</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time arr">Ank. +1:41</span><span class="stop-delay">(+6)</span><span class="stop-time dep">&nbsp;→ Wende RE72 Abf. +1:44</span><span class="stop-delay">(+1)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════ RE72 ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">RE72 · Umleitung via Rendsburg, Owschlag, Schleswig</div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re72">RE72</span>
+      <span class="train-route">Kiel Hbf <span class="div-arrow">→</span> Flensburg</span>
+      <span class="train-note">via Felde · Rendsburg · Schleswig · stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time dep">Abf. :44</span><span class="stop-delay">(+1)</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH3)</span><span class="stop-track">AKH3</span><span class="stop-time dep">Df. :47</span><span class="stop-delay">(+1)</span></div>
+        <div class="stop-row"><span class="stop-station">Felde-Brandsbek (AFEB2)</span><span class="stop-track">AFEB2</span><span class="stop-time arr">Ank. :54</span><span class="stop-time dep">&nbsp;Abf. :55</span><span class="crossing">⇄ RE74 Kreuzung</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Bredenbek</span><span class="stop-track"></span><span class="stop-time dep">Df. :58</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON175)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:06</span></div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR 3–4)</span><span class="stop-track">AR 3–4</span><span class="stop-time arr">Ank. +1:14</span><span class="stop-time dep">&nbsp;Abf. +1:15</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Owschlag (AOS1)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:24</span></div>
+        <div class="stop-row"><span class="stop-station">Schleswig (ASW1)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:33</span><span class="stop-time dep">&nbsp;Abf. +1:34</span></div>
+        <div class="stop-row"><span class="stop-station">Jübek (AJ2)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:41</span><span class="stop-time dep">&nbsp;Abf. +1:42</span></div>
+        <div class="stop-row"><span class="stop-station">Tarp</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:48</span></div>
+        <div class="stop-row"><span class="stop-station">Flensburg-Weiche (AFW1)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:54–:55</span><span class="stop-info">&nbsp;Fahrtzeitreserve</span></div>
+        <div class="stop-row"><span class="stop-station">Flensburg (AF4)</span><span class="stop-track">AF4</span><span class="stop-time arr">Ank. +1:59</span><span class="stop-delay">(+2)</span><span class="stop-time dep">&nbsp;→ Wende Abf. +2:04</span><span class="stop-delay">(+0)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re72">RE72</span>
+      <span class="train-route">Flensburg <span class="div-arrow">→</span> Kiel Hbf</span>
+      <span class="train-note">via Schleswig · Owschlag · Rendsburg · Felde · stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Flensburg (AF4)</span><span class="stop-track">AF4</span><span class="stop-time dep">Abf. :04</span><span class="stop-delay">(+0)</span></div>
+        <div class="stop-row"><span class="stop-station">Flensburg-Weiche (AFW1)</span><span class="stop-track"></span><span class="stop-time dep">Df. :06–:07</span><span class="stop-info">&nbsp;Fahrtzeitreserve</span></div>
+        <div class="stop-row"><span class="stop-station">Tarp</span><span class="stop-track"></span><span class="stop-time dep">Df. :13</span></div>
+        <div class="stop-row"><span class="stop-station">Jübek (AJ1)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :19</span><span class="stop-time dep">&nbsp;Abf. :21</span></div>
+        <div class="stop-row"><span class="stop-station">Schleswig (ASW3)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :29</span><span class="stop-time dep">&nbsp;Abf. :31</span></div>
+        <div class="stop-row"><span class="stop-station">Owschlag (AOS3)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :40</span><span class="stop-time dep">&nbsp;Abf. :42</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR1)</span><span class="stop-track">AR1</span><span class="stop-time arr">Ank. :51</span><span class="stop-time dep">&nbsp;Abf. :55</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON175)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:08</span></div>
+        <div class="stop-row"><span class="stop-station">Bredenbek</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:16</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Felde-Brandsbek (AFEB1)</span><span class="stop-track">AFEB1</span><span class="stop-time arr">Ank. +1:20</span><span class="stop-time dep">&nbsp;Abf. +1:21</span><span class="crossing">⇄ RE74 Kreuzung</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH2)</span><span class="stop-track">AKH2</span><span class="stop-time dep">Df. +1:29</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time arr">Ank. +1:41</span><span class="stop-delay">(+6)</span><span class="stop-time dep">&nbsp;→ Wende RB75 Abf. +1:44</span><span class="stop-delay">(+1)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════ RE74 ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">RE74 · Normalweg mit angepasstem Baustellenfahrplan</div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re74">RE74</span>
+      <span class="train-route">Kiel Hbf <span class="div-arrow">→</span> Husum</span>
+      <span class="train-note">stündlich</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6b)</span><span class="stop-track">AK6b</span><span class="stop-time dep">Abf. :08</span><span class="stop-delay">(+5)</span><span class="stop-info">&nbsp;so früh wie möglich</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH2)</span><span class="stop-track">AKH2</span><span class="stop-time dep">Df. :12</span><span class="stop-delay">(+5)</span></div>
+        <div class="stop-row"><span class="stop-station">Felde-Brandsbek (AFEB2)</span><span class="stop-track">AFEB2</span><span class="stop-time arr">Ank. :20</span><span class="stop-time dep">&nbsp;Abf. :21</span><span class="stop-delay">(+5)</span><span class="crossing">⇄ RE72 Kreuzung</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Bredenbek</span><span class="stop-track"></span><span class="stop-time dep">Df. :24</span><span class="stop-delay">(+5)</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON175)</span><span class="stop-track"></span><span class="stop-time dep">Df. :32</span><span class="stop-delay">(+5)</span></div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR3)</span><span class="stop-track">AR3</span><span class="stop-time arr">Ank. :40</span><span class="stop-time dep">&nbsp;Abf. :41</span><span class="stop-delay">(+6)</span><span class="stop-info">&nbsp;so früh wie möglich</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Owschlag (AOS1)</span><span class="stop-track"></span><span class="stop-time arr">Ank. :50</span><span class="stop-time dep">&nbsp;Abf. :51</span><span class="stop-delay">(+7)</span></div>
+        <div class="stop-row"><span class="stop-station">Schleswig (ASW1)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:00</span><span class="stop-time dep">&nbsp;Abf. +1:01</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Jübek (AJ2)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:08</span><span class="stop-time dep">&nbsp;Abf. +1:09</span><span class="stop-delay">(+8)</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Husum</div>
+        <div class="stop-row"><span class="stop-station">Jübek (Übergang)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:12</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Husum (AHM1)</span><span class="stop-track">AHM1</span><span class="stop-time arr">Ank. +1:33</span><span class="stop-delay">(+8)</span><span class="stop-time dep">&nbsp;→ Wende Abf. +1:40</span><span class="stop-delay">(+5)</span><span class="stop-info">&nbsp;so früh wie möglich</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="train-block">
+    <div class="train-header">
+      <span class="train-badge re74">RE74</span>
+      <span class="train-route">Husum <span class="div-arrow">→</span> Kiel Hbf</span>
+      <span class="train-note">stündlich · → Wende als RB73</span>
+    </div>
+    <div class="stops">
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Husum</div>
+        <div class="stop-row"><span class="stop-station">Husum (AHM1)</span><span class="stop-track">AHM1</span><span class="stop-time dep">Abf. :40</span><span class="stop-delay">(+5)</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Flensburg</div>
+        <div class="stop-row"><span class="stop-station">Jübek (AJ1)</span><span class="stop-track">AJ1</span><span class="stop-time arr">Ank. +1:03</span><span class="stop-time dep">&nbsp;Abf. +1:04</span><span class="stop-delay">(+6)</span></div>
+        <div class="stop-row"><span class="stop-station">Schleswig (ASW3)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:12</span><span class="stop-time dep">&nbsp;Abf. +1:13</span><span class="stop-delay">(+7)</span></div>
+        <div class="stop-row"><span class="stop-station">Owschlag (AOS3)</span><span class="stop-track"></span><span class="stop-time arr">Ank. +1:22</span><span class="stop-time dep">&nbsp;Abf. +1:23</span><span class="stop-delay">(+8)</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Neumünster</div>
+        <div class="stop-row"><span class="stop-station">Rendsburg (AR1)</span><span class="stop-track">AR1</span><span class="stop-time arr">Ank. +1:32</span><span class="stop-time dep">&nbsp;Abf. +1:33</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Osterrönfeld (AON175)</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:40</span><span class="stop-delay">(+8)</span></div>
+        <div class="stop-row"><span class="stop-station">Bredenbek</span><span class="stop-track"></span><span class="stop-time dep">Df. +1:48</span><span class="stop-delay">(+8)</span></div>
+      </div>
+      <div class="stw-group">
+        <div class="stw-label">Stellwerk Kiel</div>
+        <div class="stop-row"><span class="stop-station">Felde-Brandsbek (AFEB1)</span><span class="stop-track">AFEB1</span><span class="stop-time arr">Ank. +1:52</span><span class="stop-time dep">&nbsp;Abf. +1:55</span><span class="stop-delay">(+10)</span><span class="crossing">⇄ RE72 Kreuzung</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel-Hassee (AKH2)</span><span class="stop-track">AKH2</span><span class="stop-time dep">Df. +2:03</span><span class="stop-delay">(+10)</span></div>
+        <div class="stop-row"><span class="stop-station">Kiel Hbf (AK6a)</span><span class="stop-track">AK6a</span><span class="stop-time arr">Ank. +2:07</span><span class="stop-time dep">&nbsp;→ Wende RB73 Abf. +2:12</span><span class="stop-delay">(+4)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="section" style="margin-top:8px;">
+  <div class="section-title">Legende</div>
+  <div class="legend">
+    <div class="legend-item"><div class="leg-dot" style="background:#7eb8f7"></div>Ankunftszeit (blau)</div>
+    <div class="legend-item"><div class="leg-dot" style="background:#4caf82"></div>Abfahrtszeit (grün)</div>
+    <div class="legend-item"><div class="leg-dot" style="background:#e8c84a"></div>Verspätung</div>
+    <div class="legend-item"><div class="leg-dot" style="background:#e05c5c"></div>Zugkreuzung / Achtung</div>
+    <div class="legend-item">Df. = Durchfahrt · +h:mm = stündlich versetzt</div>
+  </div>
+</div>
+
+</body>
+</html>
