@@ -399,7 +399,7 @@ function App() {
   const [rExtraTime, setRExtraTime] = useState("");
   const [saved, setSaved]         = useState(false);
 
-  const curMins = useMan ? manMins : realNow.getHours()*60 + realNow.getMinutes() + realNow.getSeconds()/60;
+  const curMins = useMan ? manMins : realNow.getHours()*60 + realNow.getMinutes() + realNow.getSeconds()/60 - 300; // Spielzeit = Echtzeit -5h
 
   useEffect(() => { const t = setInterval(() => setRealNow(new Date()), 10000); return () => clearInterval(t); }, []);
   useEffect(() => {
