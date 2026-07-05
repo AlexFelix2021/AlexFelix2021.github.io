@@ -249,6 +249,60 @@
     font-family: 'IBM Plex Mono', monospace;
   }
   .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+  /* ── Event Banner ── */
+  .event-banner {
+    background: rgba(126, 184, 247, 0.08);
+    border: 1px solid rgba(126, 184, 247, 0.25);
+    border-left: 4px solid #7eb8f7;
+    border-radius: 5px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .event-banner-title {
+    color: #7eb8f7;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .event-banner-text {
+    color: var(--text);
+    font-size: 12px;
+  }
+  .event-banner-link {
+    display: inline-block;
+    color: var(--bg);
+    background: #7eb8f7;
+    padding: 6px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    width: fit-content;
+    margin-top: 4px;
+    transition: background 0.2s ease;
+  }
+  .event-banner-link:hover {
+    background: #5c9ce6;
+  }
+  .event-banner-wip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── Hinweise Container ── */
+  .notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
 </style>
 </head>
 <body>
@@ -256,6 +310,16 @@
 <div class="doc-header">
   <h1>Baustellenfahrplan — Schleswig-Holstein</h1>
   <div class="sub">Umleitungsverkehr Kiel · Eckernförde · Flensburg &nbsp;|&nbsp; Kiel · Neumünster · Flensburg &nbsp;|&nbsp; Stündlich wiederkehrend</div>
+</div>
+
+<div class="event-banner" style="background: rgba(166, 245, 180, 0.05); border-left: 4px solid var(--green); border-color: rgba(76, 175, 130, 0.25);">
+  <div class="event-banner-title" style="color: var(--green);">
+    🚀 Fahrplanauskunft:
+  </div>
+	<a href="fahrplan.html" target="_blank" class="event-banner-link">Zur Fahrplanauskunft wechseln</a>
+	<div class="event-banner-wip">
+    [Aktuell in Entwicklung, wird bis kurz vor Eventstart um 18 Uhr veröffentlicht!]
+  </div>
 </div>
 
 <div class="critical-note">
