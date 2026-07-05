@@ -375,18 +375,23 @@
         document.head.appendChild(l); return () => { try { document.head.removeChild(l); } catch {} };
       }, []);
 
-      const loadDelays = useCallback(async () => {
+      // KORREKTUR: Nutzt jetzt Standard-localStorage, kompatibel mit GitHub Pages!
+      const loadDelays = useCallback(() => {
         try {
-          const res = await window.storage.list("dl_", true);
-          if (!res?.keys?.length) { setDelays({}); setLastSync(new Date()); return; }
           const out = {};
-          await Promise.all(res.keys.map(async k => {
-            try { const r = await window.storage.get(k, true); if (r) out[k.slice(3)] = JSON.parse(r.value); } catch {}
-          }));
-          setDelays(out); setLastSync(new Date());
-        } catch {}
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith("dl_")) {
+              const val = localStorage.getItem(key);
+              if (val) out[key.slice(3)] = JSON.parse(val);
+            }
+          }
+          setDelays(out);
+          setLastSync(new Date());
+        } catch(e) { console.error(e); }
       }, []);
-      useEffect(() => { loadDelays(); const t = setInterval(loadDelays, 20000); return () => clearInterval(t); }, [loadDelays]);
+
+      useEffect(() => { loadDelays(); const t = setInterval(loadDelays, 15000); return () => clearInterval(t); }, [loadDelays]);
 
       const applyMan = () => { const [h,m] = manInput.split(":").map(Number); if (!isNaN(h)&&!isNaN(m)) { setManMins(h*60+m); setUseMan(true); } };
 
@@ -398,7 +403,8 @@
         if (fh !== undefined) setRHour(fh);
       };
 
-      const saveDelay = async () => {
+      // KORREKTUR: Speichert jetzt sauber im localStorage des Browsers
+      const saveDelay = () => {
         const hasDelay = rMin > 0 && rSid;
         const hasTracks = Object.keys(rTracks).some(k => rTracks[k]);
         const hasCancels = rCancelled.length > 0;
@@ -408,14 +414,11 @@
         const cleanTracks = Object.fromEntries(Object.entries(rTracks).filter(([,v]) => v));
         const val = { min: hasDelay ? rMin : 0, sid: hasDelay ? rSid : "", reason: rCustom || rReason, ts: Date.now(), trackChanges: cleanTracks, cancelledStops: rCancelled, extraStops: rExtraSt };
         try {
-          await window.storage.set(`dl_${key}`, JSON.stringify(val), true);
+          localStorage.setItem(`dl_${key}`, JSON.stringify(val));
           setDelays(p => ({ ...p, [key]: val }));
-          setSaved(true); setTimeout(() => setSaved(false), 2500);
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2500);
         } catch(e) { console.error(e); }
-      };
-
-      const clearDelay = async key => {
-        try { await window.storage.delete(`dl_${key}`, true); setDelays(p => { const n={...p}; delete n[key]; return n; }); } catch {}
       };
 
       const selSvc    = SVCS.find(s => s.id === rSvc);
@@ -424,14 +427,6 @@
       const deps      = getDeps(station, delays);
       const conns     = getConns(connFrom, connTo, delays);
       const delayKeys = Object.keys(delays);
-
-      const toggleCancel = sid => setRCancelled(prev => prev.includes(sid) ? prev.filter(x=>x!==sid) : [...prev, sid]);
-      const addExtraStop = () => {
-        if (!rExtraName) return;
-        const depTime = rExtraTime ? (() => { const [h,m]=rExtraTime.split(":").map(Number); return h*60+m; })() : undefined;
-        setRExtraSt(prev => [...prev, { name: rExtraName, track: rExtraTrack, depTime }]);
-        setRExtraName(""); setRExtraTrack(""); setRExtraTime("");
-      };
 
       return (
         <div style={{ fontFamily:"'IBM Plex Sans',system-ui,sans-serif", background:"#12151e", color:"#d0d5e5", minHeight:"100vh", fontSize:13 }}>
